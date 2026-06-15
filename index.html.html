@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Catálogo de Repuestos — Kilómetro Cero</title>
+<style>
+  :root {
+    --rojo: #ed1c24;
+    --rojo-oscuro: #7a1315;
+    --carbon: #58585b;
+    --negro: #1a1a1a;
+    --gris-claro: #f4f4f4;
+    --gris-medio: #e0e0e0;
+    --blanco: #ffffff;
+    --verde-wa: #25D366;
+    --sombra: 0 2px 12px rgba(0,0,0,0.10);
+    --sombra-hover: 0 6px 24px rgba(237,28,36,0.18);
+    --panel-w: 380px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--gris-claro); color: var(--negro); min-height: 100vh; overflow-x: hidden; }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--negro);
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.4);
+  }
+  .header-inner {
+    display: flex; align-items: center; justify-content: space-between;
+    max-width: 1400px; margin: 0 auto; padding: 10px 24px; gap: 12px; flex-wrap: wrap;
+  }
+  .logo-wrap img { height: 52px; display: block; }
+  .header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .header-tagline { color: #aaa; font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; }
+  .header-tagline span { color: var(--rojo); }
+
+  .btn-wa-header {
+    background: var(--verde-wa); color: white; border: none; border-radius: 8px;
+    padding: 9px 16px; font-size: 0.85rem; font-weight: 600; cursor: pointer;
+    display: flex; align-items: center; gap: 7px; text-decoration: none;
+    transition: background 0.2s; white-space: nowrap;
+  }
+  .btn-wa-header:hover { background: #1ebe5c; }
+
+  /* Cart button in header */
+  .btn-cart {
+    background: var(--rojo); color: white; border: none; border-radius: 8px;
+    padding: 9px 16px; font-size: 0.85rem; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; gap: 8px; transition: background 0.2s;
+    position: relative; white-space: nowrap;
+  }
+  .btn-cart:hover { background: var(--rojo-oscuro); }
+  .cart-badge {
+    background: white; color: var(--rojo); border-radius: 50%;
+    width: 20px; height: 20px; font-size: 0.72rem; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    display: none;
+  }
+  .cart-badge.show { display: flex; }
+
+  /* ── HERO ── */
+  .hero-band {
+    background: linear-gradient(135deg, var(--negro) 60%, var(--rojo-oscuro) 100%);
+    color: white; padding: 28px 24px 24px; text-align: center; position: relative; overflow: hidden;
+  }
+  .hero-band::before {
+    content: ''; position: absolute; top: -40px; right: -40px;
+    width: 200px; height: 200px; border-radius: 50%; background: rgba(237,28,36,0.07);
+  }
+  .hero-band h1 { font-size: clamp(1.3rem,3vw,1.9rem); font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; }
+  .hero-band h1 span { color: var(--rojo); }
+  .hero-band p { color: #bbb; font-size: 0.85rem; margin-top: 5px; letter-spacing: 0.06em; }
+  .stats-row { display: flex; justify-content: center; gap: 28px; margin-top: 16px; flex-wrap: wrap; }
+  .stat { text-align: center; }
+  .stat-num { font-size: 1.7rem; font-weight: 800; color: var(--rojo); line-height: 1; }
+  .stat-label { font-size: 0.68rem; color: #aaa; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 2px; }
+
+  /* ── TOOLBAR ── */
+  .toolbar {
+    background: var(--blanco); padding: 14px 24px;
+    border-bottom: 2px solid var(--gris-medio);
+    position: sticky; top: 73px; z-index: 90;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .toolbar-inner {
+    max-width: 1400px; margin: 0 auto;
+    display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+  }
+  .search-wrap { position: relative; flex: 1; min-width: 180px; max-width: 360px; }
+  .search-wrap input {
+    width: 100%; padding: 9px 14px 9px 38px;
+    border: 2px solid var(--gris-medio); border-radius: 8px;
+    font-size: 0.9rem; outline: none; background: var(--gris-claro); transition: border-color 0.2s;
+  }
+  .search-wrap input:focus { border-color: var(--rojo); background: white; }
+  .search-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: #999; pointer-events: none; }
+  select.filter-sel {
+    padding: 9px 12px; border: 2px solid var(--gris-medio); border-radius: 8px;
+    font-size: 0.85rem; outline: none; background: var(--gris-claro); cursor: pointer;
+    transition: border-color 0.2s; min-width: 140px;
+  }
+  select.filter-sel:focus { border-color: var(--rojo); }
+  .btn-reset {
+    padding: 9px 16px; background: var(--carbon); color: white; border: none;
+    border-radius: 8px; font-size: 0.82rem; font-weight: 600; cursor: pointer;
+    transition: background 0.2s; white-space: nowrap;
+  }
+  .btn-reset:hover { background: #333; }
+  .result-count { font-size: 0.8rem; color: var(--carbon); margin-left: auto; font-weight: 600; white-space: nowrap; }
+  .cat-pills { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 9px; }
+  .cat-pill {
+    padding: 5px 13px; border-radius: 20px; border: 2px solid var(--gris-medio);
+    background: var(--blanco); font-size: 0.75rem; font-weight: 600; cursor: pointer;
+    transition: all 0.15s; color: var(--carbon); text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .cat-pill:hover, .cat-pill.active { background: var(--rojo); border-color: var(--rojo); color: white; }
+
+  /* ── GRID ── */
+  .catalog-grid {
+    max-width: 1400px; margin: 20px auto;
+    padding: 0 20px 60px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: 14px;
+    transition: margin-right 0.35s;
+  }
+  .catalog-grid.shifted { margin-right: calc(var(--panel-w) + 20px); }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--blanco); border-radius: 12px; box-shadow: var(--sombra);
+    padding: 18px; display: flex; flex-direction: column; gap: 9px;
+    transition: box-shadow 0.2s, transform 0.2s; border-top: 3px solid transparent;
+    position: relative;
+  }
+  .card:hover { box-shadow: var(--sombra-hover); transform: translateY(-2px); border-top-color: var(--rojo); }
+  .card.in-cart { border-top-color: var(--verde-wa); }
+  .card-cat-badge {
+    position: absolute; top: 13px; right: 13px;
+    font-size: 0.63rem; font-weight: 700; padding: 3px 7px;
+    border-radius: 10px; text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .card-marca { font-size: 0.68rem; font-weight: 700; color: var(--rojo); text-transform: uppercase; letter-spacing: 0.12em; }
+  .card-codigo {
+    font-family: 'Courier New', monospace; font-size: 0.8rem; color: var(--carbon);
+    background: var(--gris-claro); display: inline-block; padding: 3px 7px;
+    border-radius: 5px; font-weight: 600; width: fit-content;
+  }
+  .card-desc { font-size: 0.86rem; color: var(--negro); line-height: 1.45; font-weight: 500; flex: 1; }
+  .card-vehiculos { font-size: 0.73rem; color: #888; }
+  .card-stock { font-size: 0.72rem; font-weight: 700; color: #2e7d32; }
+  .card-stock.low { color: #e65100; }
+  .card-footer {
+    border-top: 1px solid var(--gris-medio); padding-top: 10px;
+    display: flex; align-items: center; gap: 8px; margin-top: 2px;
+  }
+  .btn-add-cart {
+    background: var(--rojo); color: white; border: none; border-radius: 7px;
+    padding: 8px 14px; font-size: 0.78rem; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; gap: 6px; transition: all 0.18s; flex: 1;
+    justify-content: center;
+  }
+  .btn-add-cart:hover { background: var(--rojo-oscuro); }
+  .btn-add-cart.added { background: var(--verde-wa); }
+  .btn-add-cart.added:hover { background: #1ebe5c; }
+  .btn-wa-card {
+    background: var(--gris-claro); color: var(--carbon); border: 2px solid var(--gris-medio);
+    border-radius: 7px; padding: 8px 11px; font-size: 0.78rem; font-weight: 600;
+    cursor: pointer; display: flex; align-items: center; gap: 5px;
+    text-decoration: none; transition: all 0.18s; white-space: nowrap;
+  }
+  .btn-wa-card:hover { background: var(--verde-wa); color: white; border-color: var(--verde-wa); }
+
+  /* ── CART OVERLAY ── */
+  .cart-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+    z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+  }
+  .cart-overlay.open { opacity: 1; pointer-events: all; }
+
+  /* ── CART PANEL ── */
+  .cart-panel {
+    position: fixed; top: 0; right: 0; bottom: 0;
+    width: var(--panel-w); max-width: 100vw;
+    background: var(--blanco); z-index: 201;
+    display: flex; flex-direction: column;
+    transform: translateX(100%); transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+    box-shadow: -4px 0 32px rgba(0,0,0,0.2);
+  }
+  .cart-panel.open { transform: translateX(0); }
+
+  .cart-header {
+    background: var(--negro); color: white; padding: 18px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .cart-header h2 { font-size: 1rem; font-weight: 700; letter-spacing: 0.05em; }
+  .cart-header .cart-count-label { font-size: 0.78rem; color: #aaa; margin-top: 2px; }
+  .btn-close-cart {
+    background: none; border: none; color: white; font-size: 1.4rem;
+    cursor: pointer; padding: 4px 8px; border-radius: 6px; transition: background 0.2s;
+    line-height: 1;
+  }
+  .btn-close-cart:hover { background: rgba(255,255,255,0.1); }
+
+  .cart-body { flex: 1; overflow-y: auto; padding: 14px 16px; }
+  .cart-empty {
+    text-align: center; padding: 48px 20px; color: #bbb;
+  }
+  .cart-empty .icon { font-size: 2.5rem; margin-bottom: 10px; }
+  .cart-empty p { font-size: 0.88rem; }
+
+  .cart-item {
+    background: var(--gris-claro); border-radius: 10px; padding: 12px 14px;
+    margin-bottom: 10px; display: flex; flex-direction: column; gap: 6px;
+    border-left: 3px solid var(--rojo);
+    animation: slideIn 0.2s ease;
+  }
+  @keyframes slideIn { from { opacity:0; transform: translateX(20px); } to { opacity:1; transform: translateX(0); } }
+  .cart-item-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .cart-item-info { flex: 1; }
+  .cart-item-marca { font-size: 0.65rem; font-weight: 700; color: var(--rojo); text-transform: uppercase; letter-spacing: 0.1em; }
+  .cart-item-codigo { font-family: 'Courier New', monospace; font-size: 0.75rem; color: var(--carbon); font-weight: 600; }
+  .cart-item-desc { font-size: 0.82rem; color: var(--negro); line-height: 1.4; margin-top: 2px; }
+  .btn-remove-item {
+    background: none; border: none; color: #ccc; cursor: pointer;
+    font-size: 1rem; padding: 2px 4px; border-radius: 4px; transition: color 0.15s; flex-shrink: 0;
+  }
+  .btn-remove-item:hover { color: var(--rojo); }
+
+  .qty-control {
+    display: flex; align-items: center; gap: 8px; margin-top: 4px;
+  }
+  .qty-label { font-size: 0.75rem; color: var(--carbon); font-weight: 600; }
+  .qty-btn {
+    background: var(--gris-medio); border: none; border-radius: 5px;
+    width: 26px; height: 26px; font-size: 1rem; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s; color: var(--negro); line-height: 1;
+  }
+  .qty-btn:hover { background: var(--rojo); color: white; }
+  .qty-val {
+    font-size: 0.9rem; font-weight: 700; min-width: 24px; text-align: center;
+  }
+
+  .cart-divider { height: 1px; background: var(--gris-medio); margin: 4px 0 12px; }
+
+  .cart-footer {
+    padding: 16px; border-top: 2px solid var(--gris-medio);
+    flex-shrink: 0; display: flex; flex-direction: column; gap: 10px;
+  }
+  .cart-summary {
+    background: var(--gris-claro); border-radius: 8px; padding: 10px 14px;
+    font-size: 0.82rem; color: var(--carbon); display: flex; justify-content: space-between;
+  }
+  .cart-summary strong { color: var(--negro); font-size: 0.95rem; }
+  .btn-send-wa {
+    background: var(--verde-wa); color: white; border: none; border-radius: 10px;
+    padding: 14px 20px; font-size: 0.95rem; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    transition: background 0.2s, transform 0.15s; width: 100%;
+  }
+  .btn-send-wa:hover { background: #1ebe5c; transform: scale(1.02); }
+  .btn-send-wa:disabled { background: #ccc; cursor: not-allowed; transform: none; }
+  .btn-clear-cart {
+    background: none; border: 1px solid var(--gris-medio); color: var(--carbon);
+    border-radius: 8px; padding: 9px; font-size: 0.78rem; cursor: pointer;
+    transition: all 0.15s; width: 100%; font-weight: 600;
+  }
+  .btn-clear-cart:hover { border-color: var(--rojo); color: var(--rojo); }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    grid-column: 1/-1; text-align: center; padding: 64px 24px; color: #aaa;
+  }
+  .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+
+  /* ── WA FLOAT ── */
+  .wa-float {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--verde-wa); color: white; border-radius: 50%;
+    width: 54px; height: 54px;
+    display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
+    box-shadow: 0 4px 20px rgba(37,211,102,0.5);
+    text-decoration: none; z-index: 190; transition: transform 0.2s, right 0.35s;
+  }
+  .wa-float:hover { transform: scale(1.1); }
+  .wa-float.shifted { right: calc(var(--panel-w) + 16px); }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--negro); color: #666; text-align: center;
+    padding: 24px; font-size: 0.78rem;
+  }
+  footer strong { color: var(--rojo); }
+  footer .footer-info { margin-top: 6px; font-size: 0.7rem; color: #444; }
+
+  /* ── PRINT ── */
+  @media print {
+    header, .hero-band, .toolbar, .btn-add-cart, .btn-wa-card,
+    .cart-panel, .cart-overlay, .wa-float, footer { display: none !important; }
+    .catalog-grid { display: block; padding: 0; margin: 0; }
+    .card { break-inside: avoid; margin-bottom: 10px; box-shadow: none; border: 1px solid #ddd; page-break-inside: avoid; }
+    body { background: white; }
+    .print-header { display: block !important; }
+  }
+  .print-header {
+    display: none; text-align: center; padding: 16px 0 10px;
+    border-bottom: 2px solid #333; margin-bottom: 16px;
+  }
+  .print-header h1 { font-size: 1.3rem; }
+  .print-header p { font-size: 0.75rem; color: #555; margin-top: 3px; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 640px) {
+    :root { --panel-w: 100vw; }
+    .header-inner { padding: 8px 12px; }
+    .logo-wrap img { height: 40px; }
+    .catalog-grid { grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 10px 50px; }
+    .catalog-grid.shifted { margin-right: 0; }
+    .toolbar { top: 60px; padding: 10px 12px; }
+    .card { padding: 12px; }
+  }
+  @media (max-width: 380px) {
+    .catalog-grid { grid-template-columns: 1fr; }
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--negro); color: white; padding: 10px 20px; border-radius: 8px;
+    font-size: 0.85rem; font-weight: 600; z-index: 300;
+    opacity: 0; transition: all 0.25s; pointer-events: none; white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="print-header">
+  <h1>KILÓMETRO CERO — TU EJE MOTRIZ</h1>
+  <p>Av. Juan Bautista Arismendi, Conjunto Bazar Belune, Galpón L3 · San Antonio, Villa Rosa, Nueva Esparta</p>
+  <p>RIF: J-507763013 · kilometrocero.com.ve</p>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <div class="logo-wrap">
+      <img src="data:image/png;base64,/9j/4AAQSkZJRgABAgAAAQABAAD/wAARCAMsAywDACIAAREBAhEB/9sAQwAIBgYHBgUIBwcHCQkICgwUDQwLCwwZEhMPFB0aHx4dGhwcICQuJyAiLCMcHCg3KSwwMTQ0NB8nOT04MjwuMzQy/9sAQwEJCQkMCwwYDQ0YMiEcITIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIy/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMAAAERAhEAPwD3+iiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKSjI9RVW51Gys/wDj5u4If+ukgX+dAFukrn5/HHhm3BL63Zt/1zkD/wDoOazpvif4Viztv3kI7Jbv/UAVLkluzWOHqz1jFv5HY5ozXn8nxc8Pp9yG+l5x8sSj+bCq7/GDS/8Alnp14f8Ae2j+RNS6sF1No4DFS2pv7j0ftRXmb/GG148vSZj67pQMfoa7nQNXGt6Lb6gIvK80E+Xu3Ec46/r+NONSEtEwr4HEUI89WNlsalFcp418aQ+DLS1mls2umuJCiosgUjAyT0+n51x8fxzsyf3miTqPVZwT+RApucVozOnha1Rc0I3R65RXlkfxv0k/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qYVg01o0evTqRmuaLVhwpaQUtSbocKcKaKcKRaFpwptOFJmiF704U3vThSZoh1L3pKXvSNEOFdT4U8baj4ZmEYJnsSfmgZunup7fyPp3rlhThTjJxd0TWoU68HCorpn0voev6f4gsBdWM29ejoeGQ+jDtWrXzHo+s32h3y3lhOYpR1H8LjuGHQj/APWMGvcvCPjWy8T24jyIL9FzJAT191PcfyrvpV1PR7nxuZZRUwr54aw/L1Orooorc8YKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKAENcV45+IFp4Stjbw7bjVJB+7gzkJ6M+OQPbqfbqKnxD+IsPheI6fp5SbV5Fzg8rAD0Zh3J7D8TxgH5/uLqe9upbm5leWeVizyOcliTySayqVOXRbno4HAuu+afw/mWtR1O81jUJb6/nee4lOWZj+QA6ADoAOBUC1GKkWuKTvqz6mlFRSjFWSJFqVaiWpVrNnZAetSrUS1KtSzqgSDtXb/DHUvsXitLdmwl2jRnnjcPmX8eD+dedT6kqyrb2sbXFyxCrHGCck9BxyT7CvRPAvwu1+bVrHXtdum09baVZ4bVOZGIIIDdlB7jknkEDrW1GlNyUuiPJzXMsNCjKg9W01oe23EEd1bywSqGjlUo49QRg14poXwKlkvHn8Raj+4VyI4LY5Z1zwWYj5c46Ad+oNe4UtejZHw8Zyimk9zL0Xw9pHh60+zaTp8NrGcbti/Mx9WY8sfck1qUUUyQooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooA5XxN8PvDvipWa/sVjuj0u7fCSj6no30YEV494k+EfiHQN9xpbf2vYrklVGJlHuvf8CSfQV9FUUpRUtzWlXqUpc0GfHkc6uxQgpIpIZHGCCOoxU1fSXiv4faB4tQve2vlXmMLeQYWQemezD2IP4V4j4p+HviDwhvndDqWlrk/aoFO6MerryR+o9+1cs6DWsT3sJm8ZNRraM50U4VFFKkqhkYEfyqUVzNNOzPdhJSV4u6YtOFNpwpM1QvenCm96cKTNEOpe9JS96TNEOFOFNFOFItC1PbXE1pcJcW8rxTRncjqc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navNV+Dnitf+X/Rv++pf/ia9N8CeGpvCnhlNOupYpblppJpnhB2lmYnjPPAwO3StYOo37yODGU8FGmnh5Ns6iiiitTzQooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooA//Z" alt="Kilómetro Cero · Tu Eje Motriz">
+    </div>
+    <div class="header-tagline">Repuestos · <span>Puerto Libre · Margarita</span></div>
+    <div class="header-right">
+      <a class="btn-wa-header" href="https://wa.me/584125065488?text=Hola%2C%20quisiera%20consultar%20disponibilidad%20de%20repuestos." target="_blank">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        WhatsApp
+      </a>
+      <button class="btn-cart" onclick="toggleCart()">
+        🛒 Mi Pedido
+        <span class="cart-badge" id="cartBadge">0</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<div class="hero-band">
+  <h1>Catálogo de <span>Repuestos</span> y Autopartes</h1>
+  <p>Zona Libre · Puerto Libre · Isla Margarita · Mayo 2026</p>
+  <div class="stats-row">
+    <div class="stat"><div class="stat-num">126</div><div class="stat-label">Referencias</div></div>
+    <div class="stat"><div class="stat-num">7</div><div class="stat-label">Categorías</div></div>
+    <div class="stat"><div class="stat-num">15+</div><div class="stat-label">Marcas</div></div>
+    <div class="stat"><div class="stat-num">∞</div><div class="stat-label">Puerto Libre</div></div>
+  </div>
+</div>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <div class="toolbar-inner">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="Código, descripción, vehículo...">
+    </div>
+    <select class="filter-sel" id="marcaFilter"><option value="">Todas las marcas</option></select>
+    <select class="filter-sel" id="catFilter"><option value="">Todas las categorías</option></select>
+    <button class="btn-reset" onclick="resetFilters()">✕ Limpiar</button>
+    <div class="result-count" id="resultCount"></div>
+  </div>
+  <div class="toolbar-inner" style="padding-top:4px;">
+    <div class="cat-pills" id="catPills"></div>
+  </div>
+</div>
+
+<!-- GRID -->
+<div class="catalog-grid" id="catalogGrid"></div>
+
+<!-- CART OVERLAY -->
+<div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
+
+<!-- CART PANEL -->
+<div class="cart-panel" id="cartPanel">
+  <div class="cart-header">
+    <div>
+      <h2>🛒 Mi Pedido</h2>
+      <div class="cart-count-label" id="cartCountLabel">0 productos</div>
+    </div>
+    <button class="btn-close-cart" onclick="toggleCart()">✕</button>
+  </div>
+  <div class="cart-body" id="cartBody">
+    <div class="cart-empty">
+      <div class="icon">🛒</div>
+      <p>Tu pedido está vacío.<br>Agrega productos desde el catálogo.</p>
+    </div>
+  </div>
+  <div class="cart-footer">
+    <div class="cart-summary">
+      <span>Total de ítems:</span>
+      <strong id="cartTotalItems">0 unidades</strong>
+    </div>
+    <button class="btn-send-wa" id="btnSendWa" onclick="sendCartWA()" disabled>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      Enviar pedido por WhatsApp
+    </button>
+    <button class="btn-clear-cart" onclick="clearCart()">Vaciar pedido</button>
+  </div>
+</div>
+
+<!-- WA FLOAT -->
+<a class="wa-float" id="waFloat" href="https://wa.me/584125065488?text=Hola%2C%20quisiera%20consultar%20disponibilidad%20de%20repuestos." target="_blank" title="Consultar por WhatsApp">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+</a>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- FOOTER -->
+<footer>
+  <strong>KILÓMETRO CERO · TU EJE MOTRIZ</strong><br>
+  Kilómetro Cero Margarita, C.A. · RIF: J-507763013
+  <div class="footer-info">
+    Av. Juan Bautista Arismendi, Conjunto Bazar Belune, Galpón L3 · San Antonio, Villa Rosa, Nueva Esparta<br>
+    kilometrocero.com.ve · kilometrocerovnzla@gmail.com
+  </div>
+</footer>
+
+<script>
+const WA_NUMBER = "584125065488"; // ← CAMBIA POR TU NÚMERO REAL (sin + ni espacios)
+
+const PRODUCTS = [{"id": 1, "codigo": "ESFP0531PC", "desc": "ACEITE FULL SINTETICO AISIN GREENTECH+ 5W-30 API SP-RC, ILSAC GF-6", "cat": "Aceites", "marca": "AISIN", "vehiculos": "Universal Gasolina", "stock": 12}, {"id": 2, "codigo": "ESSP1031PC", "desc": "ACEITE SEMI-SINTETICO AISIN ECONTECH+ 10W-30 API SP-RC, ILSAC GF-6", "cat": "Aceites", "marca": "AISIN", "vehiculos": "Universal Gasolina", "stock": 11}, {"id": 3, "codigo": "08880-83320", "desc": "ACEITE TOY. 10W-30 SN/CF (4 LITROS)", "cat": "Aceites", "marca": "GENUINE", "vehiculos": "Toyota", "stock": 12}, {"id": 4, "codigo": "BL13Y", "desc": "BUJIA CHEV. C1500 / SILVERADO 3500 / KODIAK / FORD BRONCO / F250 / F350", "cat": "Bujías", "marca": "CHAMPION", "vehiculos": "Chevrolet, Ford", "stock": 100}, {"id": 5, "codigo": "RS12YC", "desc": "BUJIA COBRE CHEV. CAVALIER / CENTURY / LUMINA / FORD EXPLORER 4.0L", "cat": "Bujías", "marca": "CHAMPION", "vehiculos": "Chevrolet, Ford", "stock": 100}, {"id": 6, "codigo": "RN9YC", "desc": "BUJIA COBRE CHEV. CORSA / SPARK", "cat": "Bujías", "marca": "CHAMPION", "vehiculos": "Chevrolet", "stock": 100}, {"id": 7, "codigo": "RA8HC", "desc": "BUJIA COBRE CHEV. SAIL / SPARK GT / N300 / SUZ. ALTO / CELERIO", "cat": "Bujías", "marca": "CHAMPION", "vehiculos": "Chevrolet, Suzuki", "stock": 100}, {"id": 8, "codigo": "RS14YC6", "desc": "BUJIA COBRE FORD EXPLORER / FUSION / TRITON", "cat": "Bujías", "marca": "CHAMPION", "vehiculos": "Ford", "stock": 100}, {"id": 9, "codigo": "RES9YCC4", "desc": "BUJIA COBRE FORD FIESTA / ECOSPORT 1.6L ZETEC/ROCAM", "cat": "Bujías", "marca": "CHAMPION", "vehiculos": "Ford", "stock": 100}, {"id": 10, "codigo": "RC10YC4", "desc": "BUJIA COBRE HYU. ACCENT / ELANTRA / RIO / MIT. LANCER", "cat": "Bujías", "marca": "CHAMPION", "vehiculos": "Hyundai, Mitsubishi", "stock": 100}, {"id": 11, "codigo": "RC12LYC", "desc": "BUJIA COBRE JEEP CHEROKEE 4.0L / WRANGLER 4.0/2.5L", "cat": "Bujías", "marca": "CHAMPION", "vehiculos": "Jeep", "stock": 100}, {"id": 12, "codigo": "RE14MCC4", "desc": "BUJIA COBRE JEEP COMMANDER / DODGE RAM / GRAND CHEROKEE 5.7L", "cat": "Bujías", "marca": "CHAMPION", "vehiculos": "Jeep, Dodge", "stock": 100}, {"id": 13, "codigo": "N4C", "desc": "BUJIA COBRE MOTO GN 125", "cat": "Bujías", "marca": "CHAMPION", "vehiculos": "Motos", "stock": 100}, {"id": 14, "codigo": "RC12YC", "desc": "BUJIA COBRE TOY. COROLLA 1.8L / TERIOS / FIAT / HYU. ACCENT", "cat": "Bujías", "marca": "CHAMPION", "vehiculos": "Toyota, Fiat, Hyundai", "stock": 100}, {"id": 15, "codigo": "T16P-U#4", "desc": "BUJIA FORD / CHEV / JEEP BL15", "cat": "Bujías", "marca": "CHAMPION", "vehiculos": "Ford, Chevrolet, Jeep", "stock": 100}, {"id": 16, "codigo": "W20FP-U#4", "desc": "BUJIA MOTO HONDA / YAMAHA / SUZUKI / FUERA DE BORDA", "cat": "Bujías", "marca": "CHAMPION", "vehiculos": "Motos, Fuera de Borda", "stock": 100}, {"id": 17, "codigo": "W16EX-U#4", "desc": "BUJIA TOY. 2F/3F COROLLA AVILA", "cat": "Bujías", "marca": "CHAMPION", "vehiculos": "Toyota", "stock": 100}, {"id": 18, "codigo": "T16EPR-U#4", "desc": "BUJIA TOY. COROLLA / 2ZZ / 3ZZ / MAZDA 3 / 2010", "cat": "Bujías", "marca": "CHAMPION", "vehiculos": "Toyota, Mazda", "stock": 100}, {"id": 19, "codigo": "90919-T1004", "desc": "BUJIA TOY. INNOVA / FORTUNER / HILUX / 2TRFE 04-15", "cat": "Bujías", "marca": "GENUINE", "vehiculos": "Toyota", "stock": 50}, {"id": 20, "codigo": "K20R-U#4", "desc": "BUJIA TOY. LAND CRUISER / CELICA / MR2 / MACHITO / PRADO / MERU", "cat": "Bujías", "marca": "CHAMPION", "vehiculos": "Toyota", "stock": 48}, {"id": 21, "codigo": "W16EP-U#4", "desc": "BUJIA UNIVERSAL", "cat": "Bujías", "marca": "CHAMPION", "vehiculos": "Universal", "stock": 100}, {"id": 22, "codigo": "WC1522", "desc": "PASTILLA FRENO DEL. CHEV. CRUZE 10/~ / ORLANDO 11/~", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Chevrolet", "stock": 10}, {"id": 23, "codigo": "WC1590", "desc": "PASTILLA FRENO DEL. CHEV. SPARK 10/~", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Chevrolet", "stock": 10}, {"id": 24, "codigo": "WX652", "desc": "PASTILLA FRENO DEL. FORD EXPLORER / RANGER 92-03 / MAZ. B2600", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Ford, Mazda", "stock": 8}, {"id": 25, "codigo": "WX679", "desc": "PASTILLA FRENO DEL. FORD F150 / FORTALEZA 96/04", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Ford", "stock": 10}, {"id": 26, "codigo": "WX756", "desc": "PASTILLA FRENO DEL. FORD F250 / F350 00-10", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Ford", "stock": 10}, {"id": 27, "codigo": "WX1333", "desc": "PASTILLA FRENO DEL. FORD F250/F350 SUPER DUTY 09/13", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Ford", "stock": 1}, {"id": 28, "codigo": "WD465A", "desc": "PASTILLA FRENO DEL. HON. CIVIC 01/13 / CR-V 95/05 / ACCORD 94/02", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Honda", "stock": 10}, {"id": 29, "codigo": "WD560", "desc": "PASTILLA FRENO DEL. HON. CIVIC 1.6/1.5L 91-00", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Honda", "stock": 8}, {"id": 30, "codigo": "WD273", "desc": "PASTILLA FRENO DEL. HON. CIVIC 93/01", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Honda", "stock": 10}, {"id": 31, "codigo": "WX943", "desc": "PASTILLA FRENO DEL. HON. CR-V 02/06 / ACCORD 02/~ / PILOT 02/08", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Honda", "stock": 10}, {"id": 32, "codigo": "WC1593", "desc": "PASTILLA FRENO DEL. HYU. ACCENT 17-19 / ELANTRA 12/~ / KIA RIO 17/~", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Hyundai, Kia", "stock": 10}, {"id": 33, "codigo": "WD1156", "desc": "PASTILLA FRENO DEL. HYU. ACCENT / KIA RIO 06/11", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Hyundai, Kia", "stock": 10}, {"id": 34, "codigo": "WX497", "desc": "PASTILLA FRENO DEL. HYU. ACCENT / VERNA / EXCEL 93/05 / GETZ / EON", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Hyundai", "stock": 10}, {"id": 35, "codigo": "WC1847", "desc": "PASTILLA FRENO DEL. HYU. TUCSON IX35 / KIA SPORTAGE 15/21", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Hyundai, Kia", "stock": 10}, {"id": 36, "codigo": "WD1273", "desc": "PASTILLA FRENO DEL. JEEP CHEROKEE LIBERTY KK 08/13 / WRANGLER", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Jeep", "stock": 6}, {"id": 37, "codigo": "WD1080", "desc": "PASTILLA FRENO DEL. JEEP GRAND CHEROKEE / COMMANDER 05-10", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Jeep", "stock": 10}, {"id": 38, "codigo": "WX774", "desc": "PASTILLA FRENO DEL. KIA SPORTAGE 93/06 / RETONA 99/03", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Kia", "stock": 10}, {"id": 39, "codigo": "WX830", "desc": "PASTILLA FRENO DEL. NIS. FRONTIER 01/~ / NAVARA / NP300 / BAIC BJ40", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Nissan, BAIC", "stock": 5}, {"id": 40, "codigo": "WX855", "desc": "PASTILLA FRENO DEL. NIS. PATHFINDER 95/05 / TERRANO / X-TRAIL T30", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Nissan", "stock": 4}, {"id": 41, "codigo": "WX510", "desc": "PASTILLA FRENO DEL. NIS. SENTRA B13", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Nissan", "stock": 10}, {"id": 42, "codigo": "A1N029V-S", "desc": "PASTILLA FRENO DEL. TOY. 4500 / 4RUNNER 95/02 / PRADO", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Toyota", "stock": 10}, {"id": 43, "codigo": "A1N199", "desc": "PASTILLA FRENO DEL. TOY. COROLLA 02/08 1ZZ/3ZZ", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Toyota", "stock": 6}, {"id": 44, "codigo": "A1N185V-S", "desc": "PASTILLA FRENO DEL. TOY. COROLLA 07- / RAV4 05-", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Toyota", "stock": 10}, {"id": 45, "codigo": "A1N074V-S", "desc": "PASTILLA FRENO DEL. TOY. COROLLA 82/87", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Toyota", "stock": 2}, {"id": 46, "codigo": "A1N034V-S", "desc": "PASTILLA FRENO DEL. TOY. COROLLA / STARLET / TERCEL 82/99 (V-S)", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Toyota", "stock": 10}, {"id": 47, "codigo": "A1N034Y", "desc": "PASTILLA FRENO DEL. TOY. COROLLA / STARLET / TERCEL 82/99 (Y)", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Toyota", "stock": 10}, {"id": 48, "codigo": "WC2268", "desc": "PASTILLA FRENO DEL. TOY. GRANACE 2.8L / HIACE 2.8L / QUANTUM 2.8L", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Toyota", "stock": 10}, {"id": 49, "codigo": "WX1344", "desc": "PASTILLA FRENO DEL. TOY. HIACE 95/~ / DYNA 01/~", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Toyota", "stock": 10}, {"id": 50, "codigo": "A1N229Y", "desc": "PASTILLA FRENO DEL. TOY. HIACE 98/~ / 1KD/2KD/2TR/5L", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Toyota", "stock": 10}, {"id": 51, "codigo": "WX303", "desc": "PASTILLA FRENO DEL. TOY. HIACE / HILUX 82/01 2WD / V.W. TARO", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Toyota, Volkswagen", "stock": 10}, {"id": 52, "codigo": "A1N036", "desc": "PASTILLA FRENO DEL. TOY. HILUX 4X2 / HIACE 90/98", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Toyota", "stock": 10}, {"id": 53, "codigo": "A1N036V-S", "desc": "PASTILLA FRENO DEL. TOY. HILUX 4X2 / HIACE 90/98 (V-S)", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Toyota", "stock": 10}, {"id": 54, "codigo": "A1N011", "desc": "PASTILLA FRENO DEL. TOY. HILUX VIGO 3.0 / KAVAK / 4RUNNER 03/16 / PRADO 02/15", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Toyota", "stock": 10}, {"id": 55, "codigo": "WD976", "desc": "PASTILLA FRENO DEL. TOY. HILUX VIGO 3.0L / 4RUNNER / PRADO / TUNDRA / JAC T6/T8/T9", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Toyota, JAC", "stock": 400}, {"id": 56, "codigo": "A1N217V-S", "desc": "PASTILLA FRENO DEL. TOY. HILUX VIGO 4x4 05/15", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Toyota", "stock": 10}, {"id": 57, "codigo": "A1N141V-S", "desc": "PASTILLA FRENO DEL. TOY. HILUX VIGO / ARG 4x4 05/- (V-S)", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Toyota", "stock": 10}, {"id": 58, "codigo": "A1N141Y", "desc": "PASTILLA FRENO DEL. TOY. HILUX VIGO / ARG 4x4 05/- (Y)", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Toyota", "stock": 10}, {"id": 59, "codigo": "A1N144V-S", "desc": "PASTILLA FRENO DEL. TOY. LAND CRUISER / MACHITO / PRADO / SAMURAY", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Toyota", "stock": 10}, {"id": 60, "codigo": "WX772", "desc": "PASTILLA FRENO DEL. TOY. LAND CRUISER PRADO J100/120/150", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Toyota", "stock": 8}, {"id": 61, "codigo": "WC1303", "desc": "PASTILLA FRENO DEL. TOY. LAND CRUISER RORAIMA 16/20 / TUNDRA / 4RUNNER 10/19", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Toyota", "stock": 10}, {"id": 62, "codigo": "WC1567", "desc": "PASTILLA FRENO DEL. TOY. LAND CRUISER / FORTUNER / HILUX 04/~", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Toyota", "stock": 5}, {"id": 63, "codigo": "WD862", "desc": "PASTILLA FRENO DEL. TOY. RAV-4 2AZFE 00-05", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Toyota", "stock": 5}, {"id": 64, "codigo": "G1N005V-S", "desc": "PASTILLA FRENO DEL. TOY. TERIOS (TODOS) / MIT. LANCER 95/03", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Toyota, Mitsubishi", "stock": 10}, {"id": 65, "codigo": "A1N068", "desc": "PASTILLA FRENO DEL. TOY. YARIS 00/05 / COROLLA 99/07", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Toyota", "stock": 10}, {"id": 66, "codigo": "A1N123V-S", "desc": "PASTILLA FRENO DEL. TOY. YARIS 06/11", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Toyota", "stock": 10}, {"id": 67, "codigo": "A1N155Y", "desc": "PASTILLA FRENO DEL. TOY. YARIS 06/13 / YARIS ADVANCE", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Toyota", "stock": 10}, {"id": 68, "codigo": "WC831", "desc": "PASTILLA FRENO DEL. TOY. YARIS 1/2NZFE 99-06", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Toyota", "stock": 8}, {"id": 69, "codigo": "A1N067", "desc": "PASTILLA FRENO DEL. TOY. YARIS 99/05 / COROLLA 01/07 / PRIUS 03/09", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Toyota", "stock": 10}, {"id": 70, "codigo": "WD465", "desc": "PASTILLA FRENO HON. ACCORD 02/12 / CIVIC 05/12 / CR-V 01/05", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Honda", "stock": 10}, {"id": 71, "codigo": "A1N005V-S", "desc": "PASTILLA FRENO TOY. LAND CRUISER CHASIS LARGO / AUTANA / MACHITO / PRADO / 4RUNNER", "cat": "Pastillas de Freno", "marca": "ADVICS", "vehiculos": "Toyota", "stock": 10}, {"id": 72, "codigo": "AL-3387", "desc": "FILTRO ACEITE AVEO / OPTRA / CIELO / CORSA (PH47)", "cat": "Filtros de Aceite", "marca": "A1FILTERS", "vehiculos": "Chevrolet", "stock": 160}, {"id": 73, "codigo": "D20TCI132011", "desc": "FILTRO ACEITE CHANGAN HUNTER F70 19/~ / SAIC MAXUS G10", "cat": "Filtros de Aceite", "marca": "A1FILTERS", "vehiculos": "Changan, SAIC", "stock": 100}, {"id": 74, "codigo": "AL-61759", "desc": "FILTRO ACEITE CHEROKEE LIBERTY 3.7 V6 (PH500)", "cat": "Filtros de Aceite", "marca": "A1FILTERS", "vehiculos": "Jeep", "stock": 80}, {"id": 75, "codigo": "AL-1012010", "desc": "FILTRO ACEITE CHERY ORINOCO", "cat": "Filtros de Aceite", "marca": "A1FILTERS", "vehiculos": "Chery", "stock": 80}, {"id": 76, "codigo": "AL-19626", "desc": "FILTRO ACEITE CHEV. CRUZE / SONIC / TRACKER (P981/CH10246)", "cat": "Filtros de Aceite", "marca": "A1FILTERS", "vehiculos": "Chevrolet", "stock": 100}, {"id": 77, "codigo": "AL-92095", "desc": "FILTRO ACEITE CHEV. SPARK GT / SAIL / N300 / BEAT / AVEO 18/24", "cat": "Filtros de Aceite", "marca": "A1FILTERS", "vehiculos": "Chevrolet", "stock": 100}, {"id": 78, "codigo": "AL-36", "desc": "FILTRO ACEITE ENCAVA BUS 600/1000/3000 / CAT", "cat": "Filtros de Aceite", "marca": "A1FILTERS", "vehiculos": "Encava, CAT", "stock": 90}, {"id": 79, "codigo": "AL-5949", "desc": "FILTRO ACEITE FIAT PALIO / SIENA / UNO / MIT. L200 2023", "cat": "Filtros de Aceite", "marca": "A1FILTERS", "vehiculos": "Fiat, Mitsubishi", "stock": 100}, {"id": 80, "codigo": "AL-3600", "desc": "FILTRO ACEITE FIESTA 01/14 / F150 97/07 (PH2825/PH400)", "cat": "Filtros de Aceite", "marca": "A1FILTERS", "vehiculos": "Ford", "stock": 120}, {"id": 81, "codigo": "AL-8", "desc": "FILTRO ACEITE FORD 6/8 CIL TOYOTA MACH (PH8A)", "cat": "Filtros de Aceite", "marca": "A1FILTERS", "vehiculos": "Ford, Toyota", "stock": 80}, {"id": 82, "codigo": "AL-2C", "desc": "FILTRO ACEITE FORD F-450 / EXPLORER (CORTO)", "cat": "Filtros de Aceite", "marca": "A1FILTERS", "vehiculos": "Ford", "stock": 80}, {"id": 83, "codigo": "AL-2", "desc": "FILTRO ACEITE FORD F150 / FORTALEZA / F350", "cat": "Filtros de Aceite", "marca": "A1FILTERS", "vehiculos": "Ford", "stock": 120}, {"id": 84, "codigo": "AL-3593", "desc": "FILTRO ACEITE KIA RIO / PICANTO / FORTHING T5 / HAVAL / JAC S2/S3", "cat": "Filtros de Aceite", "marca": "A1FILTERS", "vehiculos": "Kia, Haval, JAC", "stock": 150}, {"id": 85, "codigo": "AL-5796", "desc": "FILTRO ACEITE MEGANE / TWINGO / CLIO / LOGAN / SYMBOL / SCENIC / KANGOO", "cat": "Filtros de Aceite", "marca": "A1FILTERS", "vehiculos": "Renault", "stock": 100}, {"id": 86, "codigo": "AL-3682", "desc": "FILTRO ACEITE NISSAN SENTRA / DMAX 05/06", "cat": "Filtros de Aceite", "marca": "A1FILTERS", "vehiculos": "Nissan", "stock": 160}, {"id": 87, "codigo": "AL-4997", "desc": "FILTRO ACEITE SPARK / CHANGAN / QQ / TOY. RAIZE / YARIS 23/~", "cat": "Filtros de Aceite", "marca": "A1FILTERS", "vehiculos": "Chevrolet, Changan, Toyota", "stock": 120}, {"id": 88, "codigo": "AL-19547", "desc": "FILTRO ACEITE TOY. 4RUNNER 10/- ELEMENTO (P968)", "cat": "Filtros de Aceite", "marca": "A1FILTERS", "vehiculos": "Toyota", "stock": 100}, {"id": 89, "codigo": "AL-3614", "desc": "FILTRO ACEITE TOY. 4RUNNER / HILUX / STEEM / NEON / CHANGAN ALSVIN", "cat": "Filtros de Aceite", "marca": "A1FILTERS", "vehiculos": "Toyota, Changan", "stock": 160}, {"id": 90, "codigo": "AL-44155", "desc": "FILTRO ACEITE TOY. CAMRY / RAV4 ELEMENTO (P967)", "cat": "Filtros de Aceite", "marca": "A1FILTERS", "vehiculos": "Toyota", "stock": 100}, {"id": 91, "codigo": "AL-96796", "desc": "FILTRO ACEITE TOY. COROLLA 09/- ELEMENTO (04152-YZZA6)", "cat": "Filtros de Aceite", "marca": "A1FILTERS", "vehiculos": "Toyota", "stock": 100}, {"id": 92, "codigo": "AL-4967", "desc": "FILTRO ACEITE TOY. COROLLA / STARLET TODOS (PH2840)", "cat": "Filtros de Aceite", "marca": "A1FILTERS", "vehiculos": "Toyota", "stock": 200}, {"id": 93, "codigo": "AL-12027", "desc": "FILTRO ACEITE TOY. RORAIMA / TUNDRA / SEQUOIA (P979)", "cat": "Filtros de Aceite", "marca": "A1FILTERS", "vehiculos": "Toyota", "stock": 100}, {"id": 94, "codigo": "AL-20004", "desc": "FILTRO ACEITE TOYOTA HILUX / PRADO / LAND CRUISER", "cat": "Filtros de Aceite", "marca": "A1FILTERS", "vehiculos": "Toyota", "stock": 160}, {"id": 95, "codigo": "S12-1109111", "desc": "FILTRO AIRE CHERY A1 / ARAUCA 1.3L 16V DOHC", "cat": "Filtros de Aire", "marca": "A1FILTERS", "vehiculos": "Chery", "stock": 80}, {"id": 96, "codigo": "13272717", "desc": "FILTRO AIRE CHEV. CRUZE 09/~", "cat": "Filtros de Aire", "marca": "A1FILTERS", "vehiculos": "Chevrolet", "stock": 80}, {"id": 97, "codigo": "AK-52045", "desc": "FILTRO AIRE FORD EXPLORER 3.5L 11/~ / EDGE 07/~ / MAZ. CX-9", "cat": "Filtros de Aire", "marca": "A1FILTERS", "vehiculos": "Ford, Mazda", "stock": 80}, {"id": 98, "codigo": "AK-8004", "desc": "FILTRO AIRE FORD FORTALEZA / F-150", "cat": "Filtros de Aire", "marca": "A1FILTERS", "vehiculos": "Ford", "stock": 108}, {"id": 99, "codigo": "17801-31090", "desc": "FILTRO AIRE TOY. 4RUNNER / KAVAC / FORTUNER 1GRFE", "cat": "Filtros de Aire", "marca": "A1FILTERS", "vehiculos": "Toyota", "stock": 100}, {"id": 100, "codigo": "17801-BZ140", "desc": "FILTRO AIRE TOY. AGYA", "cat": "Filtros de Aire", "marca": "A1FILTERS", "vehiculos": "Toyota", "stock": 100}, {"id": 101, "codigo": "17801-11130", "desc": "FILTRO AIRE TOY. PRADO 1GD-FTV 2.8L 15/~", "cat": "Filtros de Aire", "marca": "A1FILTERS", "vehiculos": "Toyota", "stock": 100}, {"id": 102, "codigo": "17801-31120", "desc": "FILTRO AIRE TOY. RAV4 / CAMRY / PREVIA", "cat": "Filtros de Aire", "marca": "A1FILTERS", "vehiculos": "Toyota", "stock": 100}, {"id": 103, "codigo": "17801-21030", "desc": "FILTRO AIRE TOY. YARIS 00/05 1NZ/2NZ-FE", "cat": "Filtros de Aire", "marca": "A1FILTERS", "vehiculos": "Toyota", "stock": 120}, {"id": 104, "codigo": "AF-9305", "desc": "FILTRO COMBUSTIBLE ACCENT 1.3/1.5", "cat": "Filtros de Combustible", "marca": "A1FILTERS", "vehiculos": "Hyundai", "stock": 100}, {"id": 105, "codigo": "AF-5010", "desc": "FILTRO COMBUSTIBLE COROLLA 1.6 (23300-15010)", "cat": "Filtros de Combustible", "marca": "A1FILTERS", "vehiculos": "Toyota", "stock": 100}, {"id": 106, "codigo": "AF-9292", "desc": "FILTRO COMBUSTIBLE FIESTA POWER / ECOSPORT", "cat": "Filtros de Combustible", "marca": "A1FILTERS", "vehiculos": "Ford", "stock": 100}, {"id": 107, "codigo": "AF-5237", "desc": "FILTRO COMBUSTIBLE NIS. SENTRA B13/14", "cat": "Filtros de Combustible", "marca": "A1FILTERS", "vehiculos": "Nissan", "stock": 100}, {"id": 108, "codigo": "23390-0L040-AF-16262", "desc": "FILTRO COMBUSTIBLE TOY. HILUX 1KD/2KD/5L / ISU. D-MAX 2.5/3.0", "cat": "Filtros de Combustible", "marca": "A1FILTERS", "vehiculos": "Toyota, Isuzu", "stock": 100}, {"id": 109, "codigo": "23300-30310", "desc": "FILTRO COMBUSTIBLE TOY. LAND CRUISER 2UZ-FE 4.7L 07/12", "cat": "Filtros de Combustible", "marca": "A1FILTERS", "vehiculos": "Toyota", "stock": 100}, {"id": 110, "codigo": "AF-6680", "desc": "FILTRO COMBUSTIBLE TOY. PRADO 00/06 / 4RUNNER 91/02", "cat": "Filtros de Combustible", "marca": "A1FILTERS", "vehiculos": "Toyota", "stock": 100}, {"id": 111, "codigo": "AF-3541", "desc": "FILTRO COMBUSTIBLE TOY. TERCEL / CAMRY 5SFE / MIT. LANCER / MONTERO", "cat": "Filtros de Combustible", "marca": "A1FILTERS", "vehiculos": "Toyota, Mitsubishi", "stock": 40}, {"id": 112, "codigo": "AF-3627", "desc": "FILTRO DIESEL ISU. D-MAX 3.0L / CHEV. NPR/FVR / TOY. COASTER", "cat": "Filtros de Combustible", "marca": "A1FILTERS", "vehiculos": "Isuzu, Chevrolet, Toyota", "stock": 100}, {"id": 113, "codigo": "23390-0L070-AF-26255", "desc": "FILTRO DIESEL TOY. HILUX REVO 16/~", "cat": "Filtros de Combustible", "marca": "A1FILTERS", "vehiculos": "Toyota", "stock": 100}, {"id": 114, "codigo": "23390-51070", "desc": "FILTRO DIESEL TOY. LAND CRUISER 200 / MACHITO 1VD-FTV V8 4.5L", "cat": "Filtros de Combustible", "marca": "A1FILTERS", "vehiculos": "Toyota", "stock": 100}, {"id": 115, "codigo": "8119030-BU01", "desc": "FILTRO CABINA CHANGAN HUNTER", "cat": "Filtros de Cabina", "marca": "A1FILTERS", "vehiculos": "Changan", "stock": 100}, {"id": 116, "codigo": "96539649", "desc": "FILTRO CABINA CHEV. AVEO / KALOS", "cat": "Filtros de Cabina", "marca": "A1FILTERS", "vehiculos": "Chevrolet", "stock": 100}, {"id": 117, "codigo": "96425700", "desc": "FILTRO CABINA CHEV. SPARK 05/~", "cat": "Filtros de Cabina", "marca": "A1FILTERS", "vehiculos": "Chevrolet", "stock": 100}, {"id": 118, "codigo": "13271190", "desc": "FILTRO CABINA CHEV. TRAX / TRACKER 16/~ / SPARK / SONIC / ORLANDO / AVEO", "cat": "Filtros de Cabina", "marca": "A1FILTERS", "vehiculos": "Chevrolet", "stock": 100}, {"id": 119, "codigo": "CV6Z-19N619-A", "desc": "FILTRO CABINA FORD ESCAPE 1.6L 12/16 / FOCUS 12/~ / LINCOLN MKC", "cat": "Filtros de Cabina", "marca": "A1FILTERS", "vehiculos": "Ford, Lincoln", "stock": 100}, {"id": 120, "codigo": "80292-T5R-A01", "desc": "FILTRO CABINA HON. CR-V 16/~ / CITY / CIVIC 21/~ / HR-V / PILOT", "cat": "Filtros de Cabina", "marca": "A1FILTERS", "vehiculos": "Honda", "stock": 100}, {"id": 121, "codigo": "97133-1E100", "desc": "FILTRO CABINA HYU. ACCENT 06/10", "cat": "Filtros de Cabina", "marca": "A1FILTERS", "vehiculos": "Hyundai", "stock": 100}, {"id": 122, "codigo": "97133-0U000", "desc": "FILTRO CABINA HYU. ACCENT / VERNA / KIA SOLUTO 16/-", "cat": "Filtros de Cabina", "marca": "A1FILTERS", "vehiculos": "Hyundai, Kia", "stock": 100}, {"id": 123, "codigo": "97133-2B010", "desc": "FILTRO CABINA HYU. SANTA FE 06~ / SONATA", "cat": "Filtros de Cabina", "marca": "A1FILTERS", "vehiculos": "Hyundai", "stock": 100}, {"id": 124, "codigo": "97133-F2000", "desc": "FILTRO CABINA HYU. TUCSON 15/~ / ELANTRA / KIA SPORTAGE / RIO 17/~", "cat": "Filtros de Cabina", "marca": "A1FILTERS", "vehiculos": "Hyundai, Kia", "stock": 100}, {"id": 125, "codigo": "27891-3SG0A", "desc": "FILTRO CABINA NIS. SENTRA / TIIDA 11/~", "cat": "Filtros de Cabina", "marca": "A1FILTERS", "vehiculos": "Nissan", "stock": 100}, {"id": 126, "codigo": "SW-500", "desc": "SHAMPOO CON CERA CONCENTRADO 500ml", "cat": "Accesorios", "marca": "A1FILTERS", "vehiculos": "Universal", "stock": 96}];
+
+// ── CART STATE ──
+let cart = {}; // {id: qty}
+
+// ── SETUP ──
+const cats = [...new Set(PRODUCTS.map(p => p.cat))].sort();
+const allMarcasSet = new Set();
+PRODUCTS.forEach(p => p.vehiculos.split(',').forEach(m => allMarcasSet.add(m.trim())));
+const marcas = [...allMarcasSet].sort();
+
+const catSel = document.getElementById('catFilter');
+cats.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; catSel.appendChild(o); });
+
+const marcaSel = document.getElementById('marcaFilter');
+marcas.forEach(m => { const o = document.createElement('option'); o.value = m; o.textContent = m; marcaSel.appendChild(o); });
+
+// Pills
+const pillsEl = document.getElementById('catPills');
+const allPill = document.createElement('button');
+allPill.className = 'cat-pill active'; allPill.textContent = 'Todos';
+allPill.onclick = () => { catSel.value = ''; activatePill(allPill); render(); };
+pillsEl.appendChild(allPill);
+cats.forEach(c => {
+  const btn = document.createElement('button');
+  btn.className = 'cat-pill'; btn.textContent = c;
+  btn.onclick = () => { catSel.value = c; activatePill(btn); render(); };
+  pillsEl.appendChild(btn);
+});
+
+function activatePill(el) {
+  document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ── CAT COLORS ──
+const catColors = {
+  'Aceites':'#1565c0','Bujías':'#6a1a9a','Pastillas de Freno':'#c62828',
+  'Filtros de Aceite':'#2e7d32','Filtros de Aire':'#00838f',
+  'Filtros de Combustible':'#e65100','Filtros de Cabina':'#37474f','Accesorios':'#4e342e'
+};
+function catColor(c) { return catColors[c] || '#58585b'; }
+
+// ── CART LOGIC ──
+function addToCart(id) {
+  cart[id] = (cart[id] || 0) + 1;
+  updateCartUI();
+  showToast('✔ Agregado al pedido');
+  // Update card button
+  const btn = document.querySelector(`[data-cart-btn="${id}"]`);
+  if (btn) { btn.classList.add('added'); btn.textContent = '✔ En pedido'; }
+  const card = document.querySelector(`[data-card-id="${id}"]`);
+  if (card) card.classList.add('in-cart');
+}
+
+function removeFromCart(id) {
+  delete cart[id];
+  updateCartUI();
+  const btn = document.querySelector(`[data-cart-btn="${id}"]`);
+  if (btn) { btn.classList.remove('added'); btn.innerHTML = '＋ Agregar al pedido'; }
+  const card = document.querySelector(`[data-card-id="${id}"]`);
+  if (card) card.classList.remove('in-cart');
+}
+
+function setQty(id, qty) {
+  if (qty < 1) { removeFromCart(id); return; }
+  cart[id] = qty;
+  updateCartUI();
+}
+
+function clearCart() {
+  cart = {};
+  updateCartUI();
+  // Reset all card buttons
+  document.querySelectorAll('[data-cart-btn]').forEach(btn => {
+    btn.classList.remove('added'); btn.innerHTML = '＋ Agregar al pedido';
+  });
+  document.querySelectorAll('[data-card-id]').forEach(card => card.classList.remove('in-cart'));
+}
+
+function cartItemCount() { return Object.keys(cart).length; }
+function cartTotalUnits() { return Object.values(cart).reduce((a,b) => a+b, 0); }
+
+function updateCartUI() {
+  const count = cartItemCount();
+  const units = cartTotalUnits();
+
+  // Badge
+  const badge = document.getElementById('cartBadge');
+  badge.textContent = count;
+  badge.classList.toggle('show', count > 0);
+
+  // Count label
+  document.getElementById('cartCountLabel').textContent =
+    count === 0 ? '0 productos' : `${count} producto${count !== 1 ? 's' : ''} · ${units} unidad${units !== 1 ? 'es' : ''}`;
+
+  // Total
+  document.getElementById('cartTotalItems').textContent =
+    `${units} unidad${units !== 1 ? 'es' : ''}`;
+
+  // Send button
+  document.getElementById('btnSendWa').disabled = count === 0;
+
+  // Render cart body
+  renderCartBody();
+}
+
+function renderCartBody() {
+  const body = document.getElementById('cartBody');
+  const ids = Object.keys(cart).map(Number);
+  if (ids.length === 0) {
+    body.innerHTML = `<div class="cart-empty"><div class="icon">🛒</div><p>Tu pedido está vacío.<br>Agrega productos desde el catálogo.</p></div>`;
+    return;
+  }
+  body.innerHTML = '';
+  ids.forEach(id => {
+    const p = PRODUCTS.find(x => x.id === id);
+    if (!p) return;
+    const qty = cart[id];
+    const col = catColor(p.cat);
+    const div = document.createElement('div');
+    div.className = 'cart-item';
+    div.innerHTML = `
+      <div class="cart-item-top">
+        <div class="cart-item-info">
+          <div class="cart-item-marca">${p.marca}</div>
+          <div class="cart-item-codigo">${p.codigo}</div>
+          <div class="cart-item-desc">${p.desc}</div>
+        </div>
+        <button class="btn-remove-item" onclick="removeFromCart(${id})" title="Quitar">✕</button>
+      </div>
+      <div class="qty-control">
+        <span class="qty-label">Cantidad:</span>
+        <button class="qty-btn" onclick="setQty(${id}, ${qty - 1})">−</button>
+        <span class="qty-val">${qty}</span>
+        <button class="qty-btn" onclick="setQty(${id}, ${qty + 1})">+</button>
+      </div>
+    `;
+    body.appendChild(div);
+  });
+}
+
+// ── SEND CART VIA WA ──
+function sendCartWA() {
+  const ids = Object.keys(cart).map(Number);
+  if (ids.length === 0) return;
+  let lines = ['Hola Kilómetro Cero! Quisiera consultar disponibilidad de los siguientes productos:', ''];
+  ids.forEach((id, i) => {
+    const p = PRODUCTS.find(x => x.id === id);
+    const qty = cart[id];
+    lines.push(`${i+1}. (${qty}x) [${p.codigo}] ${p.desc}`);
+  });
+  lines.push('', '¿Tienen todo disponible? Muchas gracias.');
+  const msg = encodeURIComponent(lines.join('\n'));
+  window.open(`https://wa.me/${WA_NUMBER}?text=${msg}`, '_blank');
+}
+
+// ── CART PANEL TOGGLE ──
+function toggleCart() {
+  const panel = document.getElementById('cartPanel');
+  const overlay = document.getElementById('cartOverlay');
+  const grid = document.getElementById('catalogGrid');
+  const waFloat = document.getElementById('waFloat');
+  const isOpen = panel.classList.contains('open');
+  panel.classList.toggle('open', !isOpen);
+  overlay.classList.toggle('open', !isOpen);
+  if (window.innerWidth > 900) {
+    grid.classList.toggle('shifted', !isOpen);
+    waFloat.classList.toggle('shifted', !isOpen);
+  }
+}
+
+// ── RENDER GRID ──
+function waMsg(p) {
+  const msg = encodeURIComponent(`Hola! Quisiera consultar disponibilidad:\n\nCódigo: ${p.codigo}\nDescripción: ${p.desc}\n\n¿Está disponible?`);
+  return `https://wa.me/${WA_NUMBER}?text=${msg}`;
+}
+
+function stockLabel(s) {
+  if (s >= 50) return `<div class="card-stock">✔ En stock (${s} uds.)</div>`;
+  if (s >= 5)  return `<div class="card-stock low">⚠ Stock limitado (${s} uds.)</div>`;
+  return `<div class="card-stock low">⚠ Pocas unidades (${s} uds.)</div>`;
+}
+
+function render() {
+  const query = document.getElementById('searchInput').value.toLowerCase().trim();
+  const selCat = catSel.value;
+  const selMarca = marcaSel.value;
+  const grid = document.getElementById('catalogGrid');
+  grid.innerHTML = '';
+
+  document.querySelectorAll('.cat-pill').forEach(p => {
+    p.classList.toggle('active', p.textContent === selCat || (selCat === '' && p.textContent === 'Todos'));
+  });
+
+  const filtered = PRODUCTS.filter(p => {
+    const q = !query || p.desc.toLowerCase().includes(query) || p.codigo.toLowerCase().includes(query) || p.vehiculos.toLowerCase().includes(query) || p.marca.toLowerCase().includes(query);
+    const c = !selCat || p.cat === selCat;
+    const m = !selMarca || p.vehiculos.split(',').map(x=>x.trim()).includes(selMarca);
+    return q && c && m;
+  });
+
+  document.getElementById('resultCount').textContent = `${filtered.length} resultado${filtered.length !== 1 ? 's' : ''}`;
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `<div class="empty-state"><div class="icon">🔍</div><p>Sin resultados para esa búsqueda.</p></div>`;
+    return;
+  }
+
+  filtered.forEach(p => {
+    const col = catColor(p.cat);
+    const inCart = !!cart[p.id];
+    const card = document.createElement('div');
+    card.className = 'card' + (inCart ? ' in-cart' : '');
+    card.dataset.cardId = p.id;
+    card.innerHTML = `
+      <span class="card-cat-badge" style="background:${col}1a;color:${col}">${p.cat}</span>
+      <div class="card-marca">${p.marca}</div>
+      <div class="card-codigo">${p.codigo}</div>
+      <div class="card-desc">${p.desc}</div>
+      <div class="card-vehiculos">🚗 ${p.vehiculos}</div>
+      ${stockLabel(p.stock)}
+      <div class="card-footer">
+        <button class="btn-add-cart ${inCart ? 'added' : ''}" data-cart-btn="${p.id}" onclick="addToCart(${p.id})">
+          ${inCart ? '✔ En pedido' : '＋ Agregar al pedido'}
+        </button>
+        <a class="btn-wa-card" href="${waMsg(p)}" target="_blank" title="Consultar este producto">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        </a>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+// ── TOAST ──
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+// ── EVENTS ──
+document.getElementById('searchInput').addEventListener('input', render);
+catSel.addEventListener('change', render);
+marcaSel.addEventListener('change', render);
+function resetFilters() {
+  document.getElementById('searchInput').value = '';
+  catSel.value = ''; marcaSel.value = '';
+  render();
+}
+
+render();
+</script>
+</body>
+</html>
